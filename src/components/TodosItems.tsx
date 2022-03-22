@@ -8,83 +8,110 @@ import {
   ListItemText,
   Checkbox,
   Button,
+  Typography,
+  Grid,
 } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-const TodosItems: React.FC = () => {
-  const [checked, setChecked] = React.useState([0]);
+import { TodoType } from "../types/Todos";
 
-  const handleToggle = (value: number) => () => {
-    const currentIndex = checked.indexOf(value);
-    const newChecked = [...checked];
+interface Props {
+  todos: TodoType[];
+  setTodos: React.Dispatch<React.SetStateAction<TodoType[]>>;
+  onEdit: (id: number) => void;
+  onDelete: (id: number) => void;
+}
 
-    if (currentIndex === -1) {
-      newChecked.push(value);
-    } else {
-      newChecked.splice(currentIndex, 1);
-    }
-
-    setChecked(newChecked);
+const TodosItems: React.FC<Props> = ({ todos, setTodos, onEdit, onDelete }) => {
+  const handleToggle = (id: number) => () => {
+    const todoItems = todos.map((t) => {
+      if (t.id === id) {
+        t.isDone = !t.isDone;
+      }
+      return t;
+    });
+    setTodos(todoItems);
   };
 
   return (
-    <List>
-      {[0, 1, 2, 3].map((value) => {
-        const labelId = `checkbox-list-label-${value}`;
+    <>
+      <List>
+        {todos.length === 0 && (
+          <Grid container mt={2}>
+            <Typography variant="h5" gutterBottom>
+              No Todos Found. Add one!
+            </Typography>
+          </Grid>
+        )}
+        {todos.map((todo) => {
+          const labelId = `checkbox-list-label-${todo.id}`;
 
-        return (
-          <ListItem
-            key={value}
-            secondaryAction={
-              <>
-                <Button
-                  size="medium"
-                  color="secondary"
-                  startIcon={<EditIcon />}
-                >
-                  Edit
-                </Button>
-                <Button
-                  size="medium"
-                  color="secondary"
-                  startIcon={<CheckIcon />}
-                >
-                  Mark Completed
-                </Button>
-                <Button
-                  size="medium"
-                  color="secondary"
-                  startIcon={<DeleteIcon />}
-                >
-                  Delete
-                </Button>
-              </>
-            }
-            disablePadding
-          >
-            <ListItemButton
-              role={undefined}
-              onClick={handleToggle(value)}
-              dense
+          return (
+            <ListItem
+              key={todo.id}
+              secondaryAction={
+                <>
+                  <Button
+                    size="medium"
+                    color="secondary"
+                    startIcon={<EditIcon />}
+                    onClick={(e) => onEdit(todo.id)}
+                  >
+                    Edit
+                  </Button>
+                  {/* <Button
+                    size="medium"
+                    color="secondary"
+                    startIcon={<CheckIcon />}
+                  >
+                    Mark Completed
+                  </Button> */}
+                  <Button
+                    size="medium"
+                    color="secondary"
+                    startIcon={<DeleteIcon />}
+                    onClick={(e) => onDelete(todo.id)}
+                  >
+                    Delete
+                  </Button>
+                </>
+              }
+              disablePadding
             >
-              <ListItemIcon>
-                <Checkbox
-                  edge="start"
-                  color="secondary"
-                  checked={checked.indexOf(value) !== -1}
-                  tabIndex={-1}
-                  disableRipple
-                  inputProps={{ "aria-labelledby": labelId }}
-                />
-              </ListItemIcon>
-              <ListItemText id={labelId} primary={`Line item ${value + 1}`} />
-            </ListItemButton>
-          </ListItem>
-        );
-      })}
-    </List>
+              <ListItemButton
+                disableRipple
+                role={undefined}
+                onClick={handleToggle(todo.id)}
+                dense
+              >
+                <ListItemIcon>
+                  <Checkbox
+                    edge="start"
+                    color="secondary"
+                    checked={todo.isDone}
+                    tabIndex={-1}
+                    disableRipple
+                    inputProps={{ "aria-labelledby": labelId }}
+                  />
+                </ListItemIcon>
+                <ListItemText id={labelId}>
+                  <Typography
+                    variant="body1"
+                    style={{
+                      textDecoration: todo.isDone ? "line-through" : "none",
+                    }}
+                  >
+                    {todo.text}
+                  </Typography>
+                </ListItemText>
+              </ListItemButton>
+            </ListItem>
+          );
+        })}
+      </List>
+    </>
   );
 };
 
